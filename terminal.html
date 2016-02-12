@@ -1,0 +1,87 @@
+<style>
+  .terminal {
+    position: relative;
+    top: 0;
+    left: 0;
+    background-color: black;
+    height: 100%;
+    width: 100%;
+  }
+  .terminal-input {
+    display: inline;
+    color: aqua;
+  }
+  .terminal-input input {
+    height: 0;
+    width: 0;
+    background: transparent;
+    border: none;
+    
+  }
+.blinking-cursor {
+  color: #FFFFFF;
+  -webkit-animation: 1s blink step-end infinite;
+  -moz-animation: 1s blink step-end infinite;
+  -ms-animation: 1s blink step-end infinite;
+  -o-animation: 1s blink step-end infinite;
+  animation: 1s blink step-end infinite;
+}
+
+@keyframes "blink" {
+  from, to {
+    color: transparent;
+  }
+  50% {
+    color: white;
+  }
+}
+
+@-moz-keyframes blink {
+  from, to {
+    color: transparent;
+  }
+  50% {
+    color: white;
+  }
+}
+
+@-webkit-keyframes "blink" {
+  from, to {
+    color: transparent;
+  }
+  50% {
+    color: white;
+  }
+}
+
+@-ms-keyframes "blink" {
+  from, to {
+    color: transparent;
+  }
+  50% {
+    color: white;
+  }
+}
+
+@-o-keyframes "blink" {
+  from, to {
+    color: transparent;
+  }
+  50% {
+    color: white;
+  }
+}
+</style>
+
+
+<div class="terminal">
+  <div class="terminal-history">
+  
+  </div>
+  <div class="terminal-input">
+    <pre>{{ prompt + command + cursor }}<span class="blinking-cursor">&#x258A;</span></pre>    
+    <input type="text" ng-model="command" class="hidden">
+  </div>
+       
+       
+</div>
