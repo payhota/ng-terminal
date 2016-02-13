@@ -25,26 +25,29 @@ angular
   $scope.command = ""
   $scope.cursor = ""
   $scope.commandHistory = []
+  
   $scope.backspace = function () {
     $scope.command = $scope.command.substring(0,$scope.command.length - 1);
     $scope.$apply();
   }
+  
   var findCommand = function(x) {
-    var commands = $scope.terminal.commands
-    for (i=0;i<commands.length;i++) {
-      if (commands[i].name == x) {
-        return commands[i];
-      }
-    }
-    return {}
+    return $scope.terminal.commands[x]
   }
   $scope.execute = function() {
     var input = $scope.command.split(" ");
     var command = findCommand(input[0]);
-    var output = command.execute($scope.terminal.fs)
-    $scope.commandHistory.push({"command":command.name,"output":output,"prompt" : $scope.prompt})
-    console.log($scope.commandHistory);
+    if (command) {
+      var output = command.execute($scope.terminal.fs)
+    }
+    else if (input != "") {
+      var output = "-bash: " + input + ": command not found";
+    }
+    else {
+      var output = "";
+    }
     $scope.command = "";
+    $scope.commandHistory.push({"command":input,"output":output,"prompt" : $scope.prompt})
     $scope.$apply();    
   }
   $scope.changeCommand = function(x) {
@@ -62,9 +65,11 @@ angular
       var input = angular.element(elems[0].querySelector('input'));
       var cursor = angular.element(elems[0].querySelector('.cursor'));
       elems.on('click', function() {
+        console.log(input);
         input[0].focus();
       })
       input.on('keydown', function(e) {
+        
         console.log(e.keyCode)
         //tab
         if (e.keyCode == 9) {

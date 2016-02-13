@@ -1,40 +1,27 @@
 var fs = {
   root : {
+    name: '/',
     path : "/",
-    subdirectories : [
-      {
-        path : "/home",
-        subdirectories : [
-          {
-            path : "/home/pjtatlow",
-            subdirectories : [
-              {
-                path : "/home/pjtatlow/Desktop",
-                subdirectories : [],
-                files : []
-              }
-            ],
-            files : []
-          }
-        ],
-        files : []
-      }
-    ],
-    files : []
+    type : "directory",
+    home : {
+      path : "/home",
+      type : "directory",
+      
+    }
   },
   wd : {
     path : "/home/pjtatlow"
   }
 }
 
-var cmd = [
-  {
-    name: "pwd",
+var cmd = {
+  "pwd" : {
     execute: function(fs) {
       return fs.wd.path
     }
   }
-]
+}
+
 
 angular
 .module("myApp", ['ngTerminal'])
