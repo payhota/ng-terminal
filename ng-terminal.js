@@ -1,24 +1,58 @@
 angular
 .module("ngTerminal", [])
 
+.provider('terminalConfig', function() {
+  var fileSystem,color,commands;
+  return {
+    setFileSystem: function(value) { fileSystem = value },
+    setTextColor: function(value) { color = value },
+    setCommands: function(value) { commands = value },
+    $get: function() {
+      return { 
+        "fs" : fileSystem, 
+        "color" : color, 
+        "history" : [],
+        "commands" : commands
+      }
+    }
+  }
+  
+})
 
-.controller("TerminalController", ['$scope', function($scope) {
-  $scope.prompt = "TEST:"
+.controller("TerminalController", ['$scope', '$timeout', 'terminalConfig', function($scope, $timeout, terminalConfig) {
+  $scope.terminal = terminalConfig
+  $scope.prompt = "TEST: "
   $scope.command = ""
   $scope.cursor = ""
+  $scope.commandHistory = []
   $scope.backspace = function () {
     $scope.command = $scope.command.substring(0,$scope.command.length - 1);
     $scope.$apply();
   }
+  var findCommand = function(x) {
+    var commands = $scope.terminal.commands
+    for (i=0;i<commands.length;i++) {
+      if (commands[i].name == x) {
+        return commands[i];
+      }
+    }
+    return {}
+  }
   $scope.execute = function() {
-
+    var input = $scope.command.split(" ");
+    var command = findCommand(input[0]);
+    var output = command.execute($scope.terminal.fs)
+    $scope.commandHistory.push({"command":command.name,"output":output,"prompt" : $scope.prompt})
+    console.log($scope.commandHistory);
+    $scope.command = "";
+    $scope.$apply();    
   }
   $scope.changeCommand = function(x) {
     
   }
 }])
 
-.directive('terminal', ['$timeout', function($timeout) {
+.directive('terminal', function() {
   return {
     restrice: 'E',
     controller: 'TerminalController',
@@ -26,7 +60,7 @@ angular
     templateUrl : 'terminal.html',
     link : function(scope, elems, attrs) {
       var input = angular.element(elems[0].querySelector('input'));
-      var cursor = angular.element(elems[0].querySelector('.blinking-cursor'));
+      var cursor = angular.element(elems[0].querySelector('.cursor'));
       elems.on('click', function() {
         input[0].focus();
       })
@@ -65,4 +99,5 @@ angular
   }
     
     
-}])
+})
+

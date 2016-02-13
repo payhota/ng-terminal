@@ -6,10 +6,13 @@
     background-color: black;
     height: 100%;
     width: 100%;
+    color: {{ terminal.color }};
+  }
+  .terminal pre {
+    margin: 0;
   }
   .terminal-input {
     display: inline;
-    color: aqua;
   }
   .terminal-input input {
     height: 0;
@@ -18,68 +21,73 @@
     border: none;
     
   }
-.blinking-cursor {
-  color: #FFFFFF;
-  -webkit-animation: 1s blink step-end infinite;
-  -moz-animation: 1s blink step-end infinite;
-  -ms-animation: 1s blink step-end infinite;
-  -o-animation: 1s blink step-end infinite;
-  animation: 1s blink step-end infinite;
-}
+  .cursor {
+      color: #FFFFFF;
+  }
+  .blinking-cursor {
+    -webkit-animation: 1s blink step-end infinite;
+    -moz-animation: 1s blink step-end infinite;
+    -ms-animation: 1s blink step-end infinite;
+    -o-animation: 1s blink step-end infinite;
+    animation: 1s blink step-end infinite;
+  }
 
-@keyframes "blink" {
-  from, to {
-    color: transparent;
+  @keyframes "blink" {
+    from, to {
+      color: transparent;
+    }
+    50% {
+      color: white;
+    }
   }
-  50% {
-    color: white;
-  }
-}
 
-@-moz-keyframes blink {
-  from, to {
-    color: transparent;
+  @-moz-keyframes blink {
+    from, to {
+      color: transparent;
+    }
+    50% {
+      color: white;
+    }
   }
-  50% {
-    color: white;
-  }
-}
 
-@-webkit-keyframes "blink" {
-  from, to {
-    color: transparent;
+  @-webkit-keyframes "blink" {
+    from, to {
+      color: transparent;
+    }
+    50% {
+      color: white;
+    }
   }
-  50% {
-    color: white;
-  }
-}
 
-@-ms-keyframes "blink" {
-  from, to {
-    color: transparent;
+  @-ms-keyframes "blink" {
+    from, to {
+      color: transparent;
+    }
+    50% {
+      color: white;
+    }
   }
-  50% {
-    color: white;
-  }
-}
 
-@-o-keyframes "blink" {
-  from, to {
-    color: transparent;
+  @-o-keyframes "blink" {
+    from, to {
+      color: transparent;
+    }
+    50% {
+      color: white;
+    }
   }
-  50% {
-    color: white;
-  }
-}
 </style>
 
 
 <div class="terminal">
   <div class="terminal-history">
-  
+    <div ng-repeat="cmd in commandHistory">
+      <pre>{{ cmd.prompt + cmd.command }}</pre>
+      <pre>{{ cmd.output }} </pre>
+    </div>
   </div>
   <div class="terminal-input">
-    <pre>{{ prompt + command + cursor }}<span class="blinking-cursor">&#x258A;</span></pre>    
+    <pre>{{ prompt + command }}<span class="cursor">&#x258A;</span></pre>    
     <input type="text" ng-model="command" class="hidden">
   </div>
        
