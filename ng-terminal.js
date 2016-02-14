@@ -52,10 +52,13 @@ angular
   }
   
   $scope.execute = function() {
+    var prompt = $scope.prompt;
     var input = $scope.command.split(" ");
+    var options = $scope.command.split(" ");
+    options.splice(0,1);
     var command = $scope.terminal.commands[input[0]];
     if (command) {
-      var output = command.execute($scope.terminal.fs)
+      var output = command.execute($scope.terminal.fs, options)
     }
     else if (input != "") {
       var output = "-bash: " + input + ": command not found";
@@ -63,8 +66,8 @@ angular
     else {
       var output = "";
     }
+    $scope.commandHistory.push({"command":$scope.command,"output":output,"prompt" : prompt})
     $scope.command = "";
-    $scope.commandHistory.push({"command":input,"output":output,"prompt" : $scope.prompt})
     $scope.currentCommand = 0;
     $scope.partialCommand = "";
     $scope.$apply();
@@ -103,11 +106,9 @@ angular
   }
   
   $scope.scrollToBottom = function () {
-    $timeout(function() {
-      if ($scope.terminalElement[0].scrollTop != $scope.terminalElement[0].scrollHeight) {
+    if ($scope.terminalElement[0].scrollTop != $scope.terminalElement[0].scrollHeight) {
       $scope.terminalElement[0].scrollTop = $scope.terminalElement[0].scrollHeight
-      } 
-    },5)
+    } 
 
   }
 }])
@@ -164,3 +165,34 @@ angular
     
 })
 
+.directive('focus', ['$timeout', function($timeout) {
+ return {
+ scope : {
+   trigger : '@focus'
+ },
+ link : function(scope, element) {
+  scope.$watch('trigger', function(value) {
+    if (value === "true") {
+      $timeout(function() {
+       element[0].focus();
+      });
+   }
+ });
+ }
+};
+}])
+
+
+.directive('compile', ['$compile', function ($compile) {
+return function(scope, element, attrs) {
+    scope.$watch(
+        function(scope) {
+            return scope.$eval(attrs.compile);
+        },
+        function(value) {
+            element.html(value);
+            $compile(element.contents())(scope);
+        }
+    );
+};
+}])
