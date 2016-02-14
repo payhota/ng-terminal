@@ -25,18 +25,35 @@ angular
   $scope.command = ""
   $scope.cursor = ""
   $scope.commandHistory = []
-  
+  $scope.currentCommand = 0;
+  $scope.partialCommand = "";
   $scope.backspace = function () {
     $scope.command = $scope.command.substring(0,$scope.command.length - 1);
     $scope.$apply();
   }
   
-  var findCommand = function(x) {
-    return $scope.terminal.commands[x]
+  var findCommand = function(next) {
+    if (next == 0) {
+      return $scope.partialCommand;
+    }
+    
+    var notEmpty = 0;
+    var used = [];
+    for (i = ($scope.commandHistory.length - 1); i >= 0; i--) {
+      if ($scope.commandHistory[i].command[0] != "" && used[used.length-1] != $scope.commandHistory[i].command[0]) {
+        used.push($scope.commandHistory[i].command[0]);
+        notEmpty++;
+        if (notEmpty == next) {
+          return $scope.commandHistory[i].command[0];
+        }
+      }
+    }
+    return "";
   }
+  
   $scope.execute = function() {
     var input = $scope.command.split(" ");
-    var command = findCommand(input[0]);
+    var command = $scope.terminal.commands[input[0]];
     if (command) {
       var output = command.execute($scope.terminal.fs)
     }
@@ -48,10 +65,50 @@ angular
     }
     $scope.command = "";
     $scope.commandHistory.push({"command":input,"output":output,"prompt" : $scope.prompt})
-    $scope.$apply();    
+    $scope.currentCommand = 0;
+    $scope.partialCommand = "";
+    $scope.$apply();
+    $scope.scrollToBottom();
   }
-  $scope.changeCommand = function(x) {
-    
+  
+  $scope.changeCommand = function(direction) {
+    if ($scope.currentCommand == 0) {
+      $scope.partialCommand = $scope.command;
+    }
+    if (direction == "up") {
+      var nextCommand = $scope.currentCommand + 1;
+      if (nextCommand <= $scope.commandHistory.length) {
+        var cmd = findCommand(nextCommand);
+        if (cmd != "") {
+          $scope.currentCommand++;
+        }
+      }
+    }
+    else if (direction == "down") {
+      var nextCommand = $scope.currentCommand - 1;
+      if (nextCommand != -1) {
+        var cmd = findCommand(nextCommand);
+        if (cmd != "") {
+          $scope.currentCommand--;
+        }
+      }
+    }
+    if (cmd) {
+      $scope.command = cmd;
+    }
+    else if (nextCommand < 1) {
+      $scope.command = $scope.partialCommand;
+    }
+    $scope.$apply();
+  }
+  
+  $scope.scrollToBottom = function () {
+    $timeout(function() {
+      if ($scope.terminalElement[0].scrollTop != $scope.terminalElement[0].scrollHeight) {
+      $scope.terminalElement[0].scrollTop = $scope.terminalElement[0].scrollHeight
+      } 
+    },5)
+
   }
 }])
 
@@ -64,13 +121,14 @@ angular
     link : function(scope, elems, attrs) {
       var input = angular.element(elems[0].querySelector('input'));
       var cursor = angular.element(elems[0].querySelector('.cursor'));
+      scope.terminalElement = angular.element(elems[0].querySelector('.terminal'));
       elems.on('click', function() {
-        console.log(input);
+//        console.log(input);
         input[0].focus();
       })
       input.on('keydown', function(e) {
+        scope.scrollToBottom();
         
-        console.log(e.keyCode)
         //tab
         if (e.keyCode == 9) {
           e.preventDefault();
@@ -88,12 +146,12 @@ angular
         //up arrow
         else if (e.keyCode == 38) {
           e.preventDefault()
-//          scope.changeCommand(1);
+          scope.changeCommand("up");
         }
         //down arrow        
         else if (e.keyCode == 40) {
           e.preventDefault();
-//          scope.changeCommand(-1);
+          scope.changeCommand("down");
         }
         //left and right arrows
         else if (e.keyCode == 39 || e.keyCode == 37) {
