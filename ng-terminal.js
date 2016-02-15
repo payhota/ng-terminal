@@ -6,14 +6,11 @@ angular
   return {
     setFileSystem: function(value) { fileSystem = value },
     setTextColor: function(value) { color = value },
-    setCommands: function(value) { commands = value },
     $get: function() {
       return { 
         "fs" : fileSystem, 
         "color" : color, 
-        "history" : [],
-        "commands" : commands
-      }
+        "history" : []      }
     }
   }
   
@@ -51,14 +48,25 @@ angular
     return "";
   }
   
+  var searchPath = function(cmd) {
+    for (var i = 0; i < $scope.terminal.fs.$PATH.length; i++) {
+      var dir = $scope.terminal.fs.getDirectory($scope.terminal.fs.$PATH[i]);
+      if (dir.contents[cmd]) {
+        return dir.contents[cmd].contents
+      }
+    }
+  }
+  
   $scope.execute = function() {
     var prompt = $scope.prompt;
     var input = $scope.command.split(" ");
     var options = $scope.command.split(" ");
     options.splice(0,1);
-    var command = $scope.terminal.commands[input[0]];
+    var command = searchPath(input[0])
     if (command) {
-      var output = command.execute($scope.terminal.fs, options)
+      var func = new Function("options", command)
+      var output = func(options)
+//      console.log(output);
     }
     else if (input != "") {
       var output = "-bash: " + input + ": command not found";
@@ -66,6 +74,7 @@ angular
     else {
       var output = "";
     }
+    
     $scope.commandHistory.push({"command":$scope.command,"output":output,"prompt" : prompt})
     $scope.command = "";
     $scope.currentCommand = 0;

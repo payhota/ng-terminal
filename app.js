@@ -39,26 +39,92 @@ var fs = {
       usr : {
         name : "usr",
         path : "/usr",
-        type : "directory"
+        type : "directory",
+        contents : {
+          bin : {
+            name : "bin",
+            path : "/usr/bin",
+            type : "directory",
+            contents : {
+              pwd : {
+                name : "pwd",
+                path : "/usr/bin/pwd",
+                type : "executable",
+                contents : "return this.fs.wd.path;"
+              },
+              ls : {
+                name : "ls",
+                path : "/usr/bin/ls",
+                type : "executable",
+                contents : 
+                "var output = '';"+                
+                "if (options.length == 0) {" +
+                  "var wd = this.fs.getDirectory(this.fs.wd.path);" +
+                  "for (var cont in wd.contents) {" + 
+                    "output = output + \"<span class='\" + wd.contents[cont].type + \"'>\" + wd.contents[cont].name + \"</span>\" "+
+                  "}" +
+                  "return output;" +
+                "}" + 
+                "else {" +
+                  "for (var w = 0; w < options.length; w++) {"+
+                    "var wd = this.fs.getDirectory(options[w]);"+
+                    "if (wd) {"+
+                      "if (options.length > 1) { output = output + wd.path + \"/:<br>\";}"+
+                      "for (var cont in wd.contents) {" + 
+                        "output = output + \"<span class='\" + wd.contents[cont].type + \"'>\" + wd.contents[cont].name + \"</span>\" "+
+                      "}" +
+                      "if (options.length > 1 && w < (options.length -1)) { output = output + '<br>' }"+
+                    "}"+
+                    "else {" +
+                      "output = output + \"ls: \" + options[w] + \": No such file or directory\"; "+
+                      "if (options.length > 1 && w < (options.length -1)) { output = output + '<br>' }"+
+                    "}"+
+                  "}"+
+                  "return output"+
+                "}"
+              }
+            }
+          }
+        }
       },
       bin : {
         name : "bin",
         path : "/bin",
         type : "directory"
-      },
+      }
     }
   },
   wd : {
     path : "/"
-  }
+  },
+  getDirectory : function(d) {
+    var dir = d.split('/');
+    if (dir[dir.length-1] == "") { dir.pop() }
+    var wd = this.root
+    if (dir[0] == '') {
+      for (var q = 1;q < dir.length;q++) {
+        if (wd.contents[dir[q]]) {
+          wd = wd.contents[dir[q]]
+        }
+        else {
+          return false;
+        }
+      } 
+      return wd;
+    }
+    else {
+      //get wd first
+      wd = this.getDirectory(this.wd.path);
+      for (var e = 0; e < dir.length;e++) {
+        wd = wd.contents[dir[e]];
+      }
+      return wd;
+    }
+  },
+  $PATH : ["/usr/bin/"]
 }
 
 var cmd = {
-  "pwd" : {
-    execute: function(fs, options) {
-      return fs.wd.path
-    }
-  },
   "ls" : {
     execute : function(fs, options) {
       var path = fs.wd.path.split("/");
@@ -114,7 +180,9 @@ var cmd = {
 var color = {
   "normal" : "#FFFFFF",
   "directory" : "red",
-  "text" : "green"
+  "text" : "blue",
+  'executable' : "green"
+  
 }
 angular
 .module("myApp", ['ngTerminal'])
@@ -122,7 +190,6 @@ angular
 .config(function (terminalConfigProvider) {
   terminalConfigProvider.setFileSystem(fs)
   terminalConfigProvider.setTextColor(color)
-  terminalConfigProvider.setCommands(cmd)
 })
 
 .controller("myController", ['$scope', function($scope) {
