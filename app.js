@@ -57,7 +57,7 @@ var fs = {
                 path : "/usr/bin/ls",
                 type : "executable",
                 contents : 
-                "var output = '';"+                
+                "var output = '';"+
                 "if (options.length == 0) {" +
                   "var wd = this.fs.getDirectory(this.fs.wd.path);" +
                   "for (var cont in wd.contents) {" + 
@@ -68,6 +68,7 @@ var fs = {
                 "else {" +
                   "for (var w = 0; w < options.length; w++) {"+
                     "var wd = this.fs.getDirectory(options[w]);"+
+//                    "console.log(wd);"+
                     "if (wd) {"+
                       "if (options.length > 1) { output = output + wd.path + \"/:<br>\";}"+
                       "for (var cont in wd.contents) {" + 
@@ -82,7 +83,17 @@ var fs = {
                   "}"+
                   "return output"+
                 "}"
-              }
+              },
+              cd : {
+                name : "cd",
+                path : "/usr/bin/cd",
+                type : "executable",
+                contents : function() {
+                  "var wd = this.getDirectory(options[0])"+
+                  "if (wd) { this.wd.path = wd.path;}"+
+                  "else { return \"cd: \" + options[0] + \": No such file or directory\" }"
+                }
+            }
             }
           }
         }
@@ -95,31 +106,53 @@ var fs = {
     }
   },
   wd : {
-    path : "/"
+    path : "/home"
   },
   getDirectory : function(d) {
     var dir = d.split('/');
-    if (dir[dir.length-1] == "") { dir.pop() }
-    var wd = this.root
+    if (dir[dir.length-1] == "") { dir.pop(); }
     if (dir[0] == '') {
-      for (var q = 1;q < dir.length;q++) {
+      var wd = this.root;
+      dir.splice(0,1);
+    }
+    else {
+      var wd = this.getDirectory(this.wd.path);
+    }
+    for (var q = 0;q < dir.length;q++) {
+      console.log(dir[q]);
+      if (dir[q] != ".." && dir[q] != ".") {
+        console.log("Not a ..");
         if (wd.contents[dir[q]]) {
           wd = wd.contents[dir[q]]
         }
         else {
           return false;
         }
-      } 
-      return wd;
-    }
-    else {
-      //get wd first
-      wd = this.getDirectory(this.wd.path);
-      for (var e = 0; e < dir.length;e++) {
-        wd = wd.contents[dir[e]];
       }
-      return wd;
-    }
+      else if (dir[q] == "..") {
+        var split = wd.path.split('/');
+        if (split[split.length -1] == "") {
+          split.pop();
+        }
+        split.pop();
+        if (split.length > 1) {
+          var new_path = split.join("/");
+          wd = this.getDirectory(new_path);
+          if (!wd) {
+            return false;
+          }
+        }
+        else {
+          wd = this.root;
+        }
+      }
+      else if (dir[q] == ".") {
+
+      }
+    } 
+    return wd;    
+    
+    
   },
   $PATH : ["/usr/bin/"]
 }

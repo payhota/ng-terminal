@@ -66,7 +66,6 @@ angular
     if (command) {
       var func = new Function("options", command)
       var output = func(options)
-//      console.log(output);
     }
     else if (input != "") {
       var output = "-bash: " + input + ": command not found";
