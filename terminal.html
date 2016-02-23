@@ -11,8 +11,6 @@
     overflow-x: hidden;
     overflow-y: scroll;
     font-family: monospace;
-    padding-top: 8px;
-    padding-left: 8px;
   }
   .terminal-view {
     overflow-y: scroll;
@@ -100,16 +98,57 @@
     }
   }
   
+  .editor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #000000;
+    color: #FFFFFF;
+    font-family: monospace;
+    z-index: 1;
+  }
+  
+  .closeEdit {
+    position: absolute;
+    z-index: 888;
+    bottom: 1px;
+    right: 0;
+    border: 0;
+	background-color:#1aff1a;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	border-radius:4px;
+	display:inline-block;
+	cursor:pointer;
+	color:#000000;
+	text-decoration:none;
+}
+.closeEdit:active {
+	position:absolute;
+	bottom:0px;
+}
 </style>
 
 
 <div class="terminal">
-  <div class="vert-bottom" ng-repeat="cmd in commandHistory">
-    <pre>{{ cmd.prompt + cmd.command }}</pre>
-    <pre ng-if="cmd.output" compile="cmd.output"></pre>
+  <div class="term-view">
+    <div class="vert-bottom" ng-repeat="cmd in commandHistory">
+      <pre>{{ cmd.prompt + cmd.command }}</pre>
+      <pre ng-if="cmd.output" compile="cmd.output"></pre>
+    </div>
+    <div class="vert-bottom">
+      <pre class="command-line">{{prompt+command}}<span class="cursor">&#x258A;</span></pre>
+    </div>
+    <input type="text" ng-model="command" ng-trim="false" focus="true">
   </div>
-  <div class="vert-bottom">
-    <pre class="command-line">{{ prompt + command }}<span class="cursor">&#x258A;</span></pre>
+  <div ng-if="openFile.on">
+    <textarea class="editor" ng-model="openFile.contents"></textarea>
+<!--
+    <button class="closeEdit" ng-if="openFile.type = 'view'">VIEW</button>
+    <button class="closeEdit" ng-if="openFile.type = 'edit'">EDIT</button>
+-->
+    <button class="closeEdit">EDIT</button>
   </div>
-  <input type="text" ng-model="command" focus="true">
 </div>

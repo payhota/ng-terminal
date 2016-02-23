@@ -9,30 +9,49 @@ var fs = {
         path : "/home",
         type : "directory",
         'contents' : {
-          Documents : {
-            name : "Documents",
-            path : "/home/Documents",
-            type : "directory"
-          },
-          Desktop : {
-            name : "Desktop",
-            path : "/home/Desktop",
-            type : "directory"
-          },
-          Downloads : {
-            name : "Downloads",
-            path : "/home/Downloads",
-            type : "directory"
-          },
-          Pictures : {
-            name : "Pictures",
-            path : "/home/Pictures",
-            type : "directory"
-          },
-          Videos : {
-            name : "Videos",
-            path : "/home/Videos",
-            type : "directory"
+          pjtatlow : {
+            name : "pjtatlow",
+            path : "/home/pjtatlow",
+            type : "directory",
+            contents: {
+              Documents : {
+                name : "Documents",
+                path : "/home/pjtatlow/Documents",
+                type : "directory",
+                contents: {
+                  "test\txt" : {
+                    name : "test.txt",
+                    path : "/home/pjtatlow/Documents/test.txt",
+                    type : "text",
+                    contents : "This is a text document\nthis should be on a new line."
+                  }
+                }
+              },
+              Desktop : {
+                name : "Desktop",
+                path : "/home/pjtatlow/Desktop",
+                type : "directory",
+                contents: []
+              },
+              Downloads : {
+                name : "Downloads",
+                path : "/home/pjtatlow/Downloads",
+                type : "directory",
+                contents: []
+              },
+              Pictures : {
+                name : "Pictures",
+                path : "/home/pjtatlow/Pictures",
+                type : "directory",
+                contents: []
+              },
+              Videos : {
+                name : "Videos",
+                path : "/home/pjtatlow/Videos",
+                type : "directory",
+                contents: []
+              }
+            }
           }
         }
       },
@@ -88,12 +107,15 @@ var fs = {
                 name : "cd",
                 path : "/usr/bin/cd",
                 type : "executable",
-                contents : function() {
-                  "var wd = this.getDirectory(options[0])"+
-                  "if (wd) { this.wd.path = wd.path;}"+
-                  "else { return \"cd: \" + options[0] + \": No such file or directory\" }"
-                }
-            }
+                contents : 
+                  "if (options.length > 0) {"+
+                    "var wd = this.fs.getDirectory(options[0]);"+
+                    "if (wd && wd.type=='directory') { this.fs.wd.path = wd.path;}"+
+                    "else if (wd && wd.type!='directory') { return \"cd: \" + options[0] + \": Not a directory\" }" +
+                    "else { return \"cd: \" + options[0] + \": No such file or directory\" }"+
+                  "}"+
+                  "else { this.fs.wd.path = this.fs.wd.default }"  
+              }
             }
           }
         }
@@ -101,12 +123,28 @@ var fs = {
       bin : {
         name : "bin",
         path : "/bin",
-        type : "directory"
+        type : "directory",
+        contents : {
+          cp : {
+            name : "cp",
+            path : "/bin/cp",
+            type : "executable",
+            contents : "" 
+          },
+          echo : {
+            name : "echo",
+            path : "/bin/echo",
+            type : "executable",
+            contents : "return options.join(' ')" 
+          }
+        }
       }
     }
   },
   wd : {
-    path : "/home"
+    path : "/home/pjtatlow",
+    default : "/home/pjtatlow",
+    name: "~"
   },
   getDirectory : function(d) {
     var dir = d.split('/');
@@ -119,9 +157,7 @@ var fs = {
       var wd = this.getDirectory(this.wd.path);
     }
     for (var q = 0;q < dir.length;q++) {
-      console.log(dir[q]);
-      if (dir[q] != ".." && dir[q] != ".") {
-        console.log("Not a ..");
+      if (dir[q] != ".." && dir[q] != "." && dir[q] != '~') {
         if (wd.contents[dir[q]]) {
           wd = wd.contents[dir[q]]
         }
@@ -146,68 +182,15 @@ var fs = {
           wd = this.root;
         }
       }
-      else if (dir[q] == ".") {
-
+      else if (dir[q] == "~") {
+        wd = this.getDirectory(this.wd.default)
       }
     } 
     return wd;    
     
     
   },
-  $PATH : ["/usr/bin/"]
-}
-
-var cmd = {
-  "ls" : {
-    execute : function(fs, options) {
-      var path = fs.wd.path.split("/");
-      var wd = fs.root;
-      var contents = "";
-      if (path[1] != "") {
-        for (var i = 1; i < path.length; i++) {
-          wd = wd.contents[path[i]]
-        } 
-      }
-      for (var sub in wd.contents) {
-        if (wd.contents[sub].type == "directory") {
-          contents = contents + "<span class='directory'>" + wd.contents[sub].name + "</span>";
-        }
-        else if (wd.contents[sub].type == "text") {
-          contents = contents + "<span class='text'>" + wd.contents[sub].name + "</span>";          
-        }
-      }
-      return contents.toString()
-    }
-  },
-  "cd" : {
-    execute : function(fs, options) {
-      if (options.length > 0) {
-        var path = options[0].split('/');
-        var wd = fs.root;
-        if (path[0] == '') {
-          for (var i = 1; i < path.length; i++) {
-            wd = wd.contents[path[i]]
-          }
-        }
-        else {
-          var wd_path = fs.wd.path.split('/')
-          for (var i = 1; i < wd_path.length; i++) {
-            wd = wd.contents[path[i]]
-          }
-        }
-        if (wd) {
-          console.log(wd)
-        }
-        else {
-          console.log("NOT FOUND!")
-        }
-
-      }
-      else {
-        // go back to home
-      }
-    }
-  }
+  $PATH : ["/usr/bin/", "/bin"]
 }
 
 var color = {
@@ -225,8 +208,6 @@ angular
   terminalConfigProvider.setTextColor(color)
 })
 
-.controller("myController", ['$scope', function($scope) {
-  
-  
+.controller("myController", ['$scope', 'terminalConfig', function($scope, terminalConfig) {  
   
 }])
