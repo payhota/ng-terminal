@@ -124,11 +124,17 @@
 	cursor:pointer;
 	color:#000000;
 	text-decoration:none;
-}
-.closeEdit:active {
-	position:absolute;
-	bottom:0px;
-}
+  }
+  .closeEdit:active {
+      position:absolute;
+      bottom:0px;
+  }
+  .editorFilePath {
+    position: absolute;
+    bottom: 0px;
+    left: 5px;
+    z-index: 888;
+  }
 </style>
 
 
@@ -143,12 +149,13 @@
     </div>
     <input type="text" ng-model="command" ng-trim="false" focus="true">
   </div>
-  <div ng-if="openFile.on">
-    <textarea class="editor" ng-model="openFile.contents"></textarea>
+  <div ng-if="terminal.fs.openFile">
+    <textarea class="editor" ng-model="terminal.fs.openFile.contents"></textarea>
 <!--
     <button class="closeEdit" ng-if="openFile.type = 'view'">VIEW</button>
     <button class="closeEdit" ng-if="openFile.type = 'edit'">EDIT</button>
 -->
+    <span class="editorFilePath">viewing "{{terminal.fs.openFile.path}}"</span>
     <button class="closeEdit">EDIT</button>
   </div>
 </div>

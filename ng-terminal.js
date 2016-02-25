@@ -240,7 +240,7 @@ angular
       var output = "";
     }
     
-    
+    console.log($scope.terminal.fs)
     
     $scope.commandHistory.push({"command":$scope.command,"output":output,"prompt" : prompt});
     $scope.tabPresses = 0;
@@ -305,8 +305,6 @@ angular
       scope.terminalElement = angular.element(elems[0].querySelector('.term-view'));
       elems.on('click', function() {
         if (!scope.openFile.on) {
-          console.log(input)
-          console.log(textarea)
           input[0].focus();
         }
       })
@@ -340,8 +338,7 @@ angular
         }
         //left and right arrows
         else if (e.keyCode == 39 || e.keyCode == 37) {
-//          e.preventDefault();
-          console.log(input);
+          e.preventDefault();
         }
       })
       input.on('input', function(e) {

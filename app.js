@@ -19,8 +19,8 @@ var fs = {
                 path : "/home/pjtatlow/Documents",
                 type : "directory",
                 contents: {
-                  "test\txt" : {
-                    name : "test.txt",
+                  "test" : {
+                    name : "test",
                     path : "/home/pjtatlow/Documents/test.txt",
                     type : "text",
                     contents : "This is a text document\nthis should be on a new line."
@@ -115,6 +115,22 @@ var fs = {
                     "else { return \"cd: \" + options[0] + \": No such file or directory\" }"+
                   "}"+
                   "else { this.fs.wd.path = this.fs.wd.default }"  
+              },
+              view : {
+                name : "view",
+                path : "/usr/bin/view",
+                type : "executable",
+                contents: 
+                  "var file = this.fs.getFile(options[0]);" +
+                  "if (file) {"+
+                    "if (file == 'directory') {"+
+                      "return 'view: ' + options[0] + ' is a directory';"+
+                    "}"+
+                    "else if (file == 'not found') {" +
+                      "return 'view: ' + options[0] + ' does not exist';"+
+                    "}"+
+                    "else { this.fs.openFile = file; }" +
+                  "}"
               }
             }
           }
@@ -189,6 +205,47 @@ var fs = {
     return wd;    
     
     
+  },
+  getFile : function(path) {
+
+    if (path.indexOf('/') !== 0) {
+      var file_path = this.wd.path + '/' + path.substring(0,path.lastIndexOf('/'));
+    }
+    else if (path.lastIndexOf('/') == path.length -1) {
+      var wd = this.getDirectory(path);
+      if (wd) {
+        return "directory"
+      }
+      else {
+        return false;
+      }
+    }
+    else {
+      if (path.lastIndexOf('/') == path.indexOf('/')) {
+        var file_path = "/"
+      }
+      else {
+        var file_path = path.substring(0,path.lastIndexOf('/'));
+      }
+    }
+    var file_name = path.substring(path.lastIndexOf('/')+1);
+    var wd = this.getDirectory(file_path);
+    if (wd) {
+      for (var item in wd.contents) {
+        if (wd.contents[item].name == file_name) {
+          if (wd.contents[item].type != "directory") {
+            return wd.contents[item];
+          }
+          else {
+            return "directory";
+          }
+        }
+      }
+      return "not found";
+    }
+    else {
+      return false;
+    }
   },
   $PATH : ["/usr/bin/", "/bin"]
 }
