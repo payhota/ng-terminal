@@ -27,10 +27,6 @@ angular
   $scope.commandHistory = []
   $scope.currentCommand = 0;
   $scope.partialCommand = "";
-  $scope.openFile = {};
-  $scope.openFile.on = false;
-  $scope.openFile.contents = "This is a text document\nthis should be on a new line."
-  $scope.openFile.type = "edit";
   $scope.backspace = function () {
     $scope.command = $scope.command.substring(0,$scope.command.length - 1);
     $scope.tabPresses = 0;
@@ -290,6 +286,9 @@ angular
 
   }
   
+  $scope.closeFile = function() {
+    delete $scope.terminal.fs.openFile;
+  }
 }])
 
 .directive('terminal', function() {
@@ -302,10 +301,14 @@ angular
       var input = angular.element(elems[0].querySelector('input'));
       var textarea = angular.element(elems[0].querySelector('textarea'));
       var cursor = angular.element(elems[0].querySelector('.cursor'));
-      scope.terminalElement = angular.element(elems[0].querySelector('.term-view'));
+      scope.terminalElement = angular.element(elems[0].querySelector('.terminal-view'));
       elems.on('click', function() {
-        if (!scope.openFile.on) {
+        console.log(scope.terminal.fs.openFile);
+        if (!scope.terminal.fs.openFile) {
           input[0].focus();
+        }
+        else {
+          textarea[0].focus();
         }
       })
       input.on('keydown', function(e) {
